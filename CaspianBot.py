@@ -34,6 +34,11 @@ def receive_message():
                     if message['message'].get('text'):
                         if "weather" in message['message']['text'].lower():
                             send_weather()
+                        elif "time" in message['message']['text'].lower():
+                            send_greetings()
+                            send_message(recipient_id, str(datetime.datetime.now().time()))
+                        elif "schedule" in message['message']['text'].lower():
+                            send_message(recipient_id, str(scheduler.running))
                         else:
                             send_message(recipient_id, "Waddup bitch")
 
@@ -52,12 +57,12 @@ def send_message(recipient_id, response):
 
 
 def send_greetings():
-    # Server time is in UTC time zone (UTC = EST + 5)
+    # Server time is in UTC time zone (UTC = EST + 5, EDT + 4)
     timestamp = datetime.datetime.now().time()
-    morning_start = datetime.time(5) # 0 AM EST
-    morning_end = datetime.time(17) # 12PM EST
-    afternoon_end = datetime.time(23) # 6PM EST
-    evening_end = datetime.time(4, 59) # 23:59 EST
+    morning_start = datetime.time(4)    # UTC 5 = 0 AM EST, UTC 4 = 0 AM EDT
+    morning_end = datetime.time(16)     # UTC 17 = 12PM EST, UTC 16 = 12PM EDT
+    afternoon_end = datetime.time(22)   # UTC 23 = 6PM EST, UTC 22 = 6PM EDT
+    evening_end = datetime.time(3, 59)  # UTC 4:59 = 23:59 EST, UTC 2:59 23:59 EDT
 
     if morning_start <= timestamp <= morning_end:
         message = "Good morning!"
@@ -91,6 +96,6 @@ def send_weather():
 
 
 if __name__ == '__main__':
-    app.run()
     scheduler.start()
-    scheduler.add_job(send_weather, 'cron', hour='11', minute='15') # 6:15 EST
+    scheduler.add_job(send_weather, 'cron', hour='10', minute='25') # 6:15 EDT
+    app.run()
